@@ -207,7 +207,7 @@ Mm <- org.Mm.eg.db
 neuron.GO.mf <- list()
 genenlist <- list()
 
-for(id in c("4","6","7")) {
+for(id in c("4","7")) {
 
     de<-c()
     selectedGenes <- c()
