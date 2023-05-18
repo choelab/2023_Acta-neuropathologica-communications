@@ -15,10 +15,8 @@ base::gc()
 base::rm(list = ls()) # Clear the environment
 options(warn=-1)
 
-
 path_base <- getwd()
 source(paste0(path_base,"/code/single_cell_function.R"))
-
 
 Idents(object = hipp_05m) <- sprintf("%02d",hipp_05m@meta.data$`SCT_snn_res.0.3`)
 hipp_05m@meta.data$cell_type_age[which(Idents(hipp_05m)=="01")] <- "OLG"
