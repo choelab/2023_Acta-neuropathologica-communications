@@ -5,16 +5,6 @@
 # Date : March 18, 2023
 ###############################
 
-DelayedArray:::set_verbose_block_processing(TRUE)
-
-# Passing a higher value will make some computations faster but use more memory. Adjust with caution!
-options(DelayedArray.block.size=1000e6)
-options(stringsAsFactors = FALSE)
-
-base::gc()
-base::rm(list = ls()) # Clear the environment
-options(warn=-1)
-
 path_base <- getwd()
 source(paste0(path_base,"/code/single_cell_function.R"))
 
