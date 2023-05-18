@@ -2,7 +2,7 @@
 # title : Figure 3g in Abnormal accumulation of extracellular vesicles in hippocampal dystrophic axons and regulation by the primary cilia gene intraflagellar transport homolog 88 in Alzheimer’s disease
 # author : Jaemyung, Jang (piloter2@kbri.re.kr)
 # kenel : R 4.3.0
-# Date : March 18, 2023
+# Date : May 18, 2023
 ###############################
 
 source(paste0(getwd(),"/code/proteomic_function.R"))
@@ -28,11 +28,9 @@ p <- ggvenn(Syn.types,
        fill_color =c( '#fde725ff', '#21908dff') #"#440154ff"
       )+ ggtitle("APP(abcam)-IP of septum-hippocampus synaptosome") 
 
-print(p)
 ggsave(paste0(path, "/results/Figure3g_venn.pdf"), p, width = 5, height =5 , units = "in", device = "pdf")
 
 # Matching gene symbols in the PD software and the unitProt
-
 cts <- lapply(datafromPD, function(dt){
   dts <- dt %>% subset( select = c("Accession", grep("^Abundance.Ratio.log2.|^Abundance.Ratio.Adj.P_Value.|^Abundance.Ratio.Weight.", colnames(dt), value=TRUE)))
   return(dts)
@@ -48,12 +46,7 @@ resultUNIPROT <- pbapply::pblapply(datafromPD[[k]]$Accession,function(ids){ #[-g
   results_from_uniprot <- data.frame('Accession' = datafromPD[[k]]$Accession,  #[-grep("ProteinCenter:sp_incl_isoforms",datafromPD$Accession)]
                                      'Gene.names' = unlist(resultUNIPROT))
   require(stringi)
-  # str_sub(datafromPD[[k]]$Description[1], #[-grep("ProteinCenter:sp_incl_isoforms",datafromPD$Accession)]
-  #         str_locate(datafromPD[[k]]$Description[1],pattern = "GN=")[2]+1, #[-grep("ProteinCenter:sp_incl_isoforms",datafromPD$Accession)]
-  #         str_locate(datafromPD[[k]]$Description[1],pattern = "PE=")[1]-2) #[-grep("ProteinCenter:sp_incl_isoforms",datafromPD$Accession)]
-  # seq_len(length(dataPD$Description))
   result<-lapply(datafromPD[[k]]$Description, function(desc){ #[-grep("ProteinCenter:sp_incl_isoforms",datafromPD$Accession)]
-    # str_sub(grep("GN=",unlist(str_split(desc, " ")), value = TRUE),start = 4L)
     str_sub(desc, 
             str_locate(desc,pattern = "GN=")[2]+1,
             str_locate(desc,pattern = "PE=")[1]-2)
@@ -119,7 +112,6 @@ ggsave(paste0(path, "/results/Figure3g_vc.pdf"), pv, width = 7.5, height =7.5 , 
 
 
 # Extended Data Supplementary Figure 3 - Gene Set Enrichment Analysis
-
 require(enrichR)
 
   listEnrichrSites()
