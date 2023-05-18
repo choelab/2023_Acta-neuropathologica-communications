@@ -2,7 +2,7 @@
 # title : Figure 5 in Abnormal accumulation of extracellular vesicles in hippocampal dystrophic axons and regulation by the primary cilia gene intraflagellar transport homolog 88 in Alzheimer’s disease
 # author : Jaemyung, Jang (piloter2@kbri.re.kr)
 # kenel : R 4.3.0
-# Date : March 18, 2023
+# Date : May 18, 2023
 ###############################
 
 source(paste0(getwd(),"/code/proteomic_function.R"))
@@ -90,8 +90,6 @@ pscatter <- ggplot(data.merged, aes(x=Abundance.Ratio.log2, y=Abundance.Ratio.We
                   aes(label=Gene.names), 
                   arrow = arrow(length = unit(0.0001, "npc")),
                   colour = "black",max.overlaps = 25, min.segment.length=0.1)+
-  #xlab("Log2 Fold change between single-cell and bulk-cell analysis")+
-  #ylab("Log2 Fold change between 100-cell and bulk-cell analysis")+
   scale_colour_manual(values = c("royalblue","lightgrey","darkred"))+ #brewer.pal(3,"Paired")
   
   theme_bw()+
