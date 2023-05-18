@@ -1,7 +1,7 @@
 ###############################
 # title : Figure 4 in Abnormal accumulation of extracellular vesicles in hippocampal dystrophic axons and regulation by the primary cilia gene intraflagellar transport homolog 88 in Alzheimer’s disease
 # author : Jaemyung, Jang (piloter2@kbri.re.kr)
-# kenel : R 4.3.0
+# kenel : R 4.2.0
 # Date : May 18, 2023
 ###############################
 
@@ -109,8 +109,6 @@ require(enrichR)
 
 selgene<-nichenetr::convert_human_to_mouse_symbols(unique(unlist(str_split(enrichDF$Genes,";")))) %>% na.omit()
 
-# Figure 4 - Scatter Plot
-
 p<-cowplot::plot_grid(
     ggplot(enrichDF %>% dplyr::filter(group == "negative"), aes(x=Term, y=NumGenes, fill = Adjusted.P.value)) + 
     geom_bar(stat = "identity", position = position_dodge(width = 0.1), width=0.5)+
@@ -150,7 +148,7 @@ p<-cowplot::plot_grid(
 
 ggsave(paste0(path, "/results/Figure4_pathway_summary.pdf"), p, width = 10, height = 10 , units = "in", device = "pdf")
 
-
+# Figure 4 - Scatter Plot
 pScatter<-ggplot(data.merged, aes(x=Abundance.Ratio.log2, y=Abundance.Ratio.Weight, color =group)) + 
   geom_point() +
   geom_text_repel(data = data.merged[data.merged$Gene.names %in% selgene,],#data.merged[(abs(data.merged$Abundance.Ratio.log2) > 0.25) 
