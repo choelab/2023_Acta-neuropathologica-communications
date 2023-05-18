@@ -30,3 +30,6 @@ if (!requireNamespace("nichenetr", quietly = TRUE))
 
 if (!requireNamespace("scProportionTest", quietly = TRUE))
     devtools::install_github("rpolicastro/scProportionTest")
+
+path_base <- getwd()
+hipp_05m <- readRDS(paste0(path_base,"/rawdata/hippocampus_3-5-6m.RDS"))
