@@ -7,7 +7,7 @@
 
 source(paste0(getwd(),"/code/proteomic_function.R"))
 
-k = 4 # select number - 230316_220315_N_Lysate_siIft_Proteins.txt ; from Dr. Yeo
+k = 2 # select number - 220107_APPc_abcam_SepHippoSyn_Proteins.txt ; from Dr. Baek
 
 # Figure 3g - Venn diagram
 counts<-lapply(datafromPD, function(data){
