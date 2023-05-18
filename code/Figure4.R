@@ -1,5 +1,5 @@
 ###############################
-# title : Figure 4
+# title : Figure 4 in Abnormal accumulation of extracellular vesicles in hippocampal dystrophic axons and regulation by the primary cilia gene intraflagellar transport homolog 88 in Alzheimer’s disease
 # author : Jaemyung, Jang (piloter2@kbri.re.kr)
 # kenel : R 4.3.0
 # Date : March 18, 2023
@@ -7,19 +7,7 @@
 
 source(paste0(getwd(),"/code/proteomic_function.R"))
 
-path <- file.path(get_wd())
-rawPD<-list.files(paste0(path,"/rawdata_from_PD"), pattern = "_Proteins.txt$")
-
-# Load data
-datafromPD<-lapply(rawPD, function(file){
-  return(fread(paste0(path,"/",file)))
-})
-
-require(stringr)
-for(i in seq_len(length(datafromPD))){
-  colnames(datafromPD[[i]])<-str_replace_all(colnames(datafromPD[[i]]),"[ ]",".")
-  colnames(datafromPD[[i]])<-str_replace_all(colnames(datafromPD[[i]]),"[-]","_")
-}
+k = 3 #  select number - 200114_CD63 IP_Proteins.txt ; from Dr. Yeo
 
 # Venn diagram
 counts<-lapply(datafromPD, function(data){
@@ -27,7 +15,6 @@ counts<-lapply(datafromPD, function(data){
   return(cts)
 })
 
-k = 1 # select number number from "print(rawPD)"
   
 Syn.count<-list("WT"=subset(counts[[k]], select = c("Accession",grep("WT$", colnames(counts[[k]]), value=TRUE))),
                 "Tg6799"=subset(counts[[k]], select = c("Accession",grep("Tg6799$", colnames(counts[[k]]), value=TRUE))))
