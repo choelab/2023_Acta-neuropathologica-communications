@@ -8,9 +8,25 @@ base::rm(list = ls()) # Clear the environment
 options(warn=-1)
 options(stringsAsFactors = FALSE)
 
-load.lib <- c("Seurat","ggplot2","ggrepel","ggpubr","scales","dplyr","tidyverse","devtools","data.table","SingleCellExperiment","RColorBrewer")
+load.lib <- c("Seurat","ggplot2","ggrepel","ggpubr","scales","dplyr","tidyverse","devtools","data.table","SingleCellExperiment")
 
 if (!requireNamespace(load.lib, quietly = TRUE))
     install.packages(load.lib)
 
 sapply(load.lib,require,character.only = TRUE)
+
+require.lib <- c("cowplot","BiocManager","RColorBrewer","ggpubr","enrichR","ggrepel")
+
+if (!requireNamespace(require.lib, quietly = TRUE))
+    install.packages(require.lib)
+
+bioconductor.lib <- c("EnhancedVolcano","Nebulosa","DOSE","AnnotationDbi","org.Mm.eg.db","clusterProfiler")
+
+if (!requireNamespace(bioconductor.lib, quietly = TRUE))
+    BiocManager::install(bioconductor.lib)
+
+if (!requireNamespace("nichenetr", quietly = TRUE))
+    devtools::install_github("saeyslab/nichenetr")
+
+if (!requireNamespace("scProportionTest", quietly = TRUE))
+    devtools::install_github("rpolicastro/scProportionTest")
