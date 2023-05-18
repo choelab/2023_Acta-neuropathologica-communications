@@ -7,9 +7,8 @@
 
 source(paste0(getwd(),"/code/proteomic_function.R"))
 
-path <- file.path(get_wd(),"200114_CD63")
-rawPD<-list.files(path, pattern = "_Proteins.txt$")
-
+path <- file.path(get_wd())
+rawPD<-list.files(paste0(path,"/rawdata_from_PD"), pattern = "_Proteins.txt$")
 
 # Load data
 datafromPD<-lapply(rawPD, function(file){
