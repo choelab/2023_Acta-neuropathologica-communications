@@ -33,7 +33,7 @@ hipp_05m@meta.data$cell_type_age[which(Idents(hipp_05m)=="08")] <- "Fib"
 hipp_05m@meta.data$cell_type_age[which(Idents(hipp_05m)=="09")] <- "NEUT"
 hipp_05m@meta.data$cell_type_age[which(Idents(hipp_05m)=="10")] <- "OLG"
 hipp_05m@meta.data$cell_type_age[which(Idents(hipp_05m)=="11")] <- "EPC"
-#hipp_05m@meta.data$cell_type_age[which(Idents(hipp_05m)=="12")] <- "VSMC" # Since the total number was less than 100, we excluded them from the analysis
+#hipp_05m@meta.data$cell_type_age[which(Idents(hipp_05m)=="12")] <- "VSMC" # Since the total number was less than 100, we excluded them from further analysis
 
 #Extended Data Suppmentary Figure 7a
 pS1a<-DimPlot(subset(hipp_05m, subset = genetype == "C57BL/6", ident =names(which(table(Idents(hipp_05m))>100))), group.by = "cell_type_age", label =T, label.size = 2.5, pt.size = 0.01,raster=FALSE,
