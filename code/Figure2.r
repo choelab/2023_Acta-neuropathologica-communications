@@ -5,9 +5,9 @@
 # Date : March 18, 2023
 ###############################
 
-source(paste0(getwd(),"/proteomic_function.R"))
+source(paste0(getwd(),"/code/proteomic_function.R"))
 
-path <- file.path(get_wd(),"190722_MS hipp Synaptosome")
+path <- file.path(get_wd(),"/rawdata_from_PD")
 rawPD<-list.files(path, pattern = "_Proteins.txt$")
 
 
