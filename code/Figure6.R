@@ -54,7 +54,7 @@ hipp_05m.markers <- FindAllMarkers(hipp_05m,
                                     only.pos = TRUE, logfc.threshold = 0.25, 
                                     assay = "RNA")
 
-hipp_05m.markers.top20 <- hipp_05m.markers %>% group_by(cluster) #%>%  filter (p_val_adj < 0.1) %>% top_n(n = 5, wt = avg_log2FC) 
+hipp_05m.markers.top20 <- hipp_05m.markers %>% group_by(cluster) %>%  filter (p_val_adj < 0.1) %>% top_n(n = 5, wt = avg_log2FC) 
 hipp_05m.markers.arrange <- rbind(hipp_05m.markers.top20 %>% dplyr::filter(cluster == "ASC"),
       hipp_05m.markers.top20 %>% dplyr::filter(cluster == "Endo"),
       hipp_05m.markers.top20 %>% dplyr::filter(cluster == "EPC"),
@@ -194,6 +194,7 @@ neuron.DE <- lapply(levels(Idents(neuron)), function(ID){#lapply(names(which(tab
   return(marker)
 })
 
+# Gene Set Enrichment Analysis
 require(DOSE)
 require(AnnotationDbi)
 require(org.Mm.eg.db)
