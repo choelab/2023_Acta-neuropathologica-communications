@@ -41,7 +41,7 @@ pS1a<-DimPlot(subset(hipp_05m, subset = genetype == "C57BL/6", ident =names(whic
   theme(legend.position = "none",  axis.title = element_blank(), 
         plot.title = element_text(size = 12, face = "bold",hjust = 0), axis.line = element_blank(), 
         axis.text = element_blank(),  axis.ticks = element_blank()) + 
-  ggtitle(paste0("WT hippocampus : ",comma(length(colnames(subset(hipp_05m, subset = genetype == "C57BL/6", ident =names(which(table(Idents(hipp_05m))>200))))),format = "d")," cells")) +
+  ggtitle(paste0("WT hippocampus : ",comma(length(colnames(subset(hipp_05m, subset = genetype == "C57BL/6", ident =names(which(table(Idents(hipp_05m))>100))))),format = "d")," cells")) +
   NoLegend() + NoAxes()
 
 pS1b<-DimPlot(subset(hipp_05m, subset = genetype == "5xFAD (C57BL/6)", ident = names(which(table(Idents(hipp_05m))>100))), group.by = "cell_type_age", label =T, label.size = 2.5, pt.size = 0.01,raster=FALSE,
@@ -49,7 +49,7 @@ pS1b<-DimPlot(subset(hipp_05m, subset = genetype == "5xFAD (C57BL/6)", ident = n
   theme(legend.position = "none",  axis.title = element_blank(), 
         plot.title = element_text(size = 12, face = "bold",hjust = 0), axis.line = element_blank(), 
         axis.text = element_blank(),  axis.ticks = element_blank()) + 
-  ggtitle(paste0("Tg6799 hippocampus : ",comma(length(colnames(subset(hipp_05m, subset = genetype == "5xFAD (C57BL/6)", ident =names(which(table(Idents(hipp_05m))>200))))),format = "d")," cells")) +
+  ggtitle(paste0("Tg6799 hippocampus : ",comma(length(colnames(subset(hipp_05m, subset = genetype == "5xFAD (C57BL/6)", ident =names(which(table(Idents(hipp_05m))>100))))),format = "d")," cells")) +
   NoLegend() + NoAxes()
 
 Idents(hipp_05m) <- "cell_type_age"
