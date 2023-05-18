@@ -172,7 +172,8 @@ hipp_05m@meta.data$cell_type_age[which(WhichCells(hipp_05m) %in% WhichCells(neur
     sample_identity = "genetype"
   )
 
-p6c<-permutation_plot(prop_test,log2FD_threshold = 0.3,FDR_threshold = 0.1)
+prop_test@results$permutation <- prop_test@results$permutation[-18,]
+p6c <- permutation_plot(prop_test,log2FD_threshold = 0.3,FDR_threshold = 0.1)
 
 ggsave(paste0(path_base,"/results/Figure6a_DimPlot.pdf"), p6a, units = "in", width =5, height =5, device = "pdf")
 ggsave(paste0(path_base,"/results/Figure6b_DotPlot.pdf"), p6b, units = "in", width =5, height =10, device = "pdf")
