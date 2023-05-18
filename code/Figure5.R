@@ -1,5 +1,5 @@
 ###############################
-# title : Figure 5
+# title : Figure 5 in Abnormal accumulation of extracellular vesicles in hippocampal dystrophic axons and regulation by the primary cilia gene intraflagellar transport homolog 88 in Alzheimer’s disease
 # author : Jaemyung, Jang (piloter2@kbri.re.kr)
 # kenel : R 4.3.0
 # Date : March 18, 2023
@@ -8,10 +8,10 @@
 source(paste0(getwd(),"/code/proteomic_function.R"))
 
 path <- file.path(get_wd())
-rawPD<-list.files(paste0(path,"/rawdata_from_PD"), pattern = "_Proteins.txt$")
+rawPD<-list.files(paste0(path,"/rawdata"), pattern = "_Proteins.txt$")
 
 
-# Load data
+# Load data exported from the PD software
 datafromPD<-lapply(rawPD, function(file){
   return(fread(paste0(path,"/",file)))
 })
@@ -22,38 +22,37 @@ for(i in seq_len(length(datafromPD))){
   colnames(datafromPD[[i]])<-str_replace_all(colnames(datafromPD[[i]]),"[-]","_")
 }
 
-k = 4 # select number number from "print(rawPD)"
-
 counts<-lapply(datafromPD, function(data){
   cts<-data %>% base::subset(select = c("Accession",grep("^Abundances.", colnames(data), value=TRUE))) 
   return(cts)
 })
 
+cts <- lapply(datafromPD, function(dt){
+  dts <- dt %>% subset( select = c("Accession", grep("^Abundance.Ratio\\.log2|^Abundance.Ratio.Adj.P_Value|^Abundance.Ratio.Weight", colnames(dt), value=TRUE)))
+  return(dts)
+})
+
+
+k = 4 # select number - 230316_220315_N_Lysate_siIft_Proteins.txt ; from Dr. Yeo
+
+# Figure 5 - Venn Diagram
+
 new.count<-list("Expr"=subset(counts[[k]], select = c("Accession",grep("Sample.siIft88_Abeta$", colnames(counts[[k]]), value=TRUE))),
                 "Ctrl"=subset(counts[[k]], select = c("Accession",grep("Sample.Con_Abeta$", colnames(counts[[k]]), value=TRUE))))
                 
 new.types <- list( "Expr" = new.count[['Expr']]$Accession[unique(c(unlist(apply(new.count[['Expr']], 2, function(x) which(!is.na(x)))[-1])))],
-                   "Ctrl"=new.count[['Ctrl']]$Accession[unique(c(unlist(apply(new.count[['Ctrl']], 2, function(x) which(!is.na(x)))[-1])))])
-                   
+                   "Ctrl"=new.count[['Ctrl']]$Accession[unique(c(unlist(apply(new.count[['Ctrl']], 2, function(x) which(!is.na(x)))[-1])))])               
 
-p2 <- ggvenn(new.types,
+p <- ggvenn(new.types,
        fill_alpha = 0.1,
        fill_color =c( '#fde725ff', '#21908dff') ) + #"#440154ff"
-        ggtitle("Exosomes from normal neuron treated with siIft88 and veh upon Abeta")
+        ggtitle("Exosomes from normal neuron treated with siIft88 and veh")
 
+ggsave(paste0(path, "/results/Figure5_venn.pdf"), p, width = 5, height =5 , units = "in", device = "pdf")
 
-cts <- lapply(datafromPD, function(dt){
-  dts <- dt %>% subset( select = c("Accession", grep("^Abundance.Ratio\\.log2|^Abundance.Ratio.Adj.P_Value|^Abundance.Ratio.Weight", colnames(dt), value=TRUE)))
-  #dts <- dt %>% subset( select = c("Accession", grep("^Abundance.Ratio\\.\\(log2\\)|^Abundance.Ratio.P_Value|^Abundance.Ratio.Weight", colnames(dt), value=TRUE)))
-  return(dts)
-})
+# Matching gene symbols in the PD software and the unitProt
 
-ggsave(paste0(path, "/results/Figure_venn.pdf"), p, width = 5, height =5 , units = "in", device = "pdf")
-
-# Gene symbol
-
- 
-  resultUNIPROT <- pbapply::pblapply(datafromPD[[k]]$Accession,function(ids){ #[-grep("ProteinCenter:sp_incl_isoforms",datafromPD$Accession)]
+resultUNIPROT <- pbapply::pblapply(datafromPD[[k]]$Accession,function(ids){ #[-grep("ProteinCenter:sp_incl_isoforms",datafromPD$Accession)]
     data <- uniprot_mapping(ids)
     content(data, as= "text", encoding = 'UTF-8')
     res<-unlist(str_split(unlist(str_split(unlist(str_split(content(data, as= "text", encoding = 'UTF-8'),"\\t")),"\\n"))[4]," "))[1]
@@ -84,16 +83,13 @@ colnames(data_unique)
 data.merged <- subset(data_unique, select = c('Gene.names','Accession','Abundance.Ratio.log2.siIft88_Abeta..siIft88','Abundance.Ratio.Adj.P_Value.siIft88_Abeta..siIft88','Abundance.Ratio.Weight.siIft88_Abeta..siIft88'))
 colnames(data.merged) <- c("Gene.names","Accession", "Abundance.Ratio.log2","Abundance.Ratio.Adj.P_Value","Abundance.Ratio.Weight")
 
-# Scatter Plot
+# Figure 5 - Scatter Plot
+
 require(RColorBrewer)
 require(ggrepel)
-
    
   selAccession <- data.merged %>% 
            dplyr::filter(Abundance.Ratio.log2 < -0.25 & Abundance.Ratio.Adj.P_Value < .1) %>% dplyr::pull(Accession)
-
-
-
   selAccession.1 <- data.merged %>% 
            dplyr::filter(Abundance.Ratio.log2 > 0.25 & Abundance.Ratio.Adj.P_Value < .1) %>% dplyr::pull(Accession)
            
@@ -128,9 +124,9 @@ pscatter <- ggplot(data.merged, aes(x=Abundance.Ratio.log2, y=Abundance.Ratio.We
         legend.background = element_blank()) + 
    theme(legend.position = "none")
 
-ggsave(paste0(path, "/results/Figure4d_scatter.pdf"), pscatter, width = 5, height = 5 , units = "in", device = "pdf")
+ggsave(paste0(path, "/results/Figure5_scatter.pdf"), pscatter, width = 5, height = 5 , units = "in", device = "pdf")
 
-# Pathway analysis
+# Figure 5 - Gene Set Enrichment Analysis
 
 require(enrichR)
 
@@ -139,6 +135,7 @@ require(enrichR)
   dbs <- listEnrichrDbs()
 
   dbs <- "GO_Biological_Process_2021"
+  
   if (websiteLive) {
       enriched <- enrichr(data.merged$Gene.names[data.merged$Accession %in% selAccession], dbs)
       enriched.1 <- enrichr(data.merged$Gene.names[data.merged$Accession %in% selAccession.1], dbs)
@@ -154,7 +151,7 @@ require(enrichR)
 
 selgene<-nichenetr::convert_human_to_mouse_symbols(unique(unlist(str_split(enrichDF$Genes,";")))) %>% na.omit()
 
-p<-cowplot::plot_grid(
+pPathway<-cowplot::plot_grid(
     ggplot(enrichDF %>% dplyr::filter(group == "negative"), aes(x=Term, y=NumGenes, fill = Adjusted.P.value)) + 
       geom_bar(stat = "identity", position = position_dodge(width = 0.1), width=0.5)+
       #scale_fill_gradient(low = "yellow", high = "red", na.value = NA)+
@@ -186,4 +183,4 @@ p<-cowplot::plot_grid(
           rel_heights = c(dim(enrichDF %>% dplyr::filter(group == "negative"))[1],dim(enrichDF %>% dplyr::filter(group == "positive"))[1]),
         ncol=1)
 
-ggsave(paste0(path, "/results/Figure3f_pathway_summary.pdf"), p, width = 10, height = 10 , units = "in", device = "pdf")
+ggsave(paste0(path, "/results/Figure5_pathway_summary.pdf"), pPathway, width = 10, height = 10 , units = "in", device = "pdf")
