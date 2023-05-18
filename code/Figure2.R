@@ -29,7 +29,6 @@ ggsave(paste0(path, "/results/Figure2_venn.pdf"), p, width = 5, height =5 , unit
 
 cts <- lapply(datafromPD, function(dt){
   dts <- dt %>% subset( select = c("Accession", grep("^Abundance.Ratio\\.\\(log2\\)|^Abundance.Ratio.Adj..P_Value|^Abundance.Ratio.Weight", colnames(dt), value=TRUE)))
-  #dts <- dt %>% subset( select = c("Accession", grep("^Abundance.Ratio\\.\\(log2\\)|^Abundance.Ratio.P_Value|^Abundance.Ratio.Weight", colnames(dt), value=TRUE)))
   return(dts)
 })
   
@@ -43,12 +42,7 @@ resultUNIPROT <- pbapply::pblapply(datafromPD[[k]]$Accession,function(ids){ #[-g
   results_from_uniprot <- data.frame('Accession' = datafromPD[[k]]$Accession,  #[-grep("ProteinCenter:sp_incl_isoforms",datafromPD$Accession)]
                                      'Gene.names' = unlist(resultUNIPROT))
   require(stringi)
-  # str_sub(datafromPD[[k]]$Description[1], #[-grep("ProteinCenter:sp_incl_isoforms",datafromPD$Accession)]
-  #         str_locate(datafromPD[[k]]$Description[1],pattern = "GN=")[2]+1, #[-grep("ProteinCenter:sp_incl_isoforms",datafromPD$Accession)]
-  #         str_locate(datafromPD[[k]]$Description[1],pattern = "PE=")[1]-2) #[-grep("ProteinCenter:sp_incl_isoforms",datafromPD$Accession)]
-  # seq_len(length(dataPD$Description))
   result<-lapply(datafromPD[[k]]$Description, function(desc){ #[-grep("ProteinCenter:sp_incl_isoforms",datafromPD$Accession)]
-    # str_sub(grep("GN=",unlist(str_split(desc, " ")), value = TRUE),start = 4L)
     str_sub(desc, 
             str_locate(desc,pattern = "GN=")[2]+1,
             str_locate(desc,pattern = "PE=")[1]-2)
@@ -96,8 +90,6 @@ pscatter <- ggplot(data.merged, aes(x=Abundance.Ratio.log2, y=Abundance.Ratio.We
                   arrow = arrow(length = unit(0.000001, "npc")),
                   colour = "black",
                   max.overlaps = 25, min.segment.length=0.1)+
-  #xlab("Log2 Fold change between single-cell and bulk-cell analysis")+
-  #ylab("Log2 Fold change between 100-cell and bulk-cell analysis")+
   scale_colour_manual(values = c("royalblue","lightgrey","darkred"))+ #brewer.pal(3,"Paired")
   
   theme_bw()+
