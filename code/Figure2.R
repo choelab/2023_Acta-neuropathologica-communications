@@ -1,5 +1,5 @@
 ###############################
-# title : Figure 2
+# title : Figure 2 in Abnormal accumulation of extracellular vesicles in hippocampal dystrophic axons and regulation by the primary cilia gene intraflagellar transport homolog 88 in Alzheimer’s disease
 # author : Jaemyung, Jang (piloter2@kbri.re.kr)
 # kenel : R 4.3.0
 # Date : March 18, 2023
@@ -7,28 +7,8 @@
 
 source(paste0(getwd(),"/code/proteomic_function.R"))
 
-path <- file.path(get_wd())
-rawPD<-list.files(paste0(path,"/rawdata_from_PD"), pattern = "_Proteins.txt$")
+k = 1 # select number - 190722_MS hipp Synaptosome_Proteins.txt ; from Dr. Lee
 
-
-# Load data
-datafromPD<-lapply(rawPD, function(file){
-  return(fread(paste0(path,"/",file)))
-})
-
-require(stringr)
-for(i in seq_len(length(datafromPD))){
-  colnames(datafromPD[[i]])<-str_replace_all(colnames(datafromPD[[i]]),"[ ]",".")
-  colnames(datafromPD[[i]])<-str_replace_all(colnames(datafromPD[[i]]),"[-]","_")
-}
-
-# Venn diagram
-counts<-lapply(datafromPD, function(data){
-  cts<-data %>% base::subset(select = c("Accession",grep("^Abundances.", colnames(data), value=TRUE))) 
-  return(cts)
-})
-
-k=1
 Syn.count<-list("WT"=subset(counts[[k]], select = c("Accession",grep("WT$", colnames(counts[[k]]), value=TRUE))),
                 "Tg6799"=subset(counts[[k]], select = c("Accession",grep("Tg6799$", colnames(counts[[k]]), value=TRUE))))
                 
@@ -42,24 +22,23 @@ p <- ggvenn(Syn.types,
        fill_color =c( '#fde725ff', '#21908dff') ) + #"#440154ff"
         ggtitle("Hippocampal synaptosome between C57BL/6 and 5xFAD")
 
-ggsave(paste0(path, "/results/Figure_venn.pdf"), p, width = 5, height =5 , units = "in", device = "pdf")
+ggsave(paste0(path, "/results/Figure2_venn.pdf"), p, width = 5, height =5 , units = "in", device = "pdf")
+
+
+# Matching gene symbols in the PD software and the unitProt
 
 cts <- lapply(datafromPD, function(dt){
   dts <- dt %>% subset( select = c("Accession", grep("^Abundance.Ratio\\.\\(log2\\)|^Abundance.Ratio.Adj..P_Value|^Abundance.Ratio.Weight", colnames(dt), value=TRUE)))
   #dts <- dt %>% subset( select = c("Accession", grep("^Abundance.Ratio\\.\\(log2\\)|^Abundance.Ratio.P_Value|^Abundance.Ratio.Weight", colnames(dt), value=TRUE)))
   return(dts)
 })
-
-# Gene symbol
-
-  k = 1 # select number number from "print(rawPD)"
   
-  resultUNIPROT <- pbapply::pblapply(datafromPD[[k]]$Accession,function(ids){ #[-grep("ProteinCenter:sp_incl_isoforms",datafromPD$Accession)]
+resultUNIPROT <- pbapply::pblapply(datafromPD[[k]]$Accession,function(ids){ #[-grep("ProteinCenter:sp_incl_isoforms",datafromPD$Accession)]
     data <- uniprot_mapping(ids)
     content(data, as= "text", encoding = 'UTF-8')
     res<-unlist(str_split(unlist(str_split(unlist(str_split(content(data, as= "text", encoding = 'UTF-8'),"\\t")),"\\n"))[4]," "))[1]
     return(res)
-  })
+})
   
   results_from_uniprot <- data.frame('Accession' = datafromPD[[k]]$Accession,  #[-grep("ProteinCenter:sp_incl_isoforms",datafromPD$Accession)]
                                      'Gene.names' = unlist(resultUNIPROT))
@@ -88,18 +67,14 @@ colnames(data_unique)
 data.merged <- subset(data_unique, select = c('Gene.names','Accession','Abundance.Ratio.(log2):.(Sample)./.(Control)','Abundance.Ratio.Adj..P_Value:.(Sample)./.(Control)','Abundance.Ratio.Weight:.(Sample)./.(Control)'))
 colnames(data.merged) <- c("Gene.names","Accession", "Abundance.Ratio.log2","Abundance.Ratio.Adj.P_Value","Abundance.Ratio.Weight")
 
-# Scatter Plot
+# Figure 2 - Scatter Plot
 require(RColorBrewer)
 require(ggrepel)
 
     selAccession <- data.merged %>% 
             dplyr::filter(Abundance.Ratio.log2 < -0.25 & Abundance.Ratio.Adj.P_Value < .1) %>% dplyr::pull(Accession)
-
-
-
     selAccession.1 <- data.merged %>% 
             dplyr::filter(Abundance.Ratio.log2 > 0.25 & Abundance.Ratio.Adj.P_Value < .1) %>% dplyr::pull(Accession)
-
 
     # options(repr.plot.width = 16, repr.plot.height = 16)
     keyvals.colour <- ifelse(data.merged$Accession %in% selAccession, 'royalblue', 'lightgrey')
@@ -134,9 +109,9 @@ pscatter <- ggplot(data.merged, aes(x=Abundance.Ratio.log2, y=Abundance.Ratio.We
         legend.background = element_blank()) + 
    theme(legend.position = "none")
 
-ggsave(paste0(path, "/results/Figure2_scatter_renew.pdf"), pscatter, width = 5, height = 5 , units = "in", device = "pdf")
+ggsave(paste0(path, "/results/Figure2_scatter.pdf"), pscatter, width = 5, height = 5 , units = "in", device = "pdf")
 
-# Pathway analysis
+# Figure 2 - Gene Set Enrichment Analysis
 
 require(enrichR)
 
