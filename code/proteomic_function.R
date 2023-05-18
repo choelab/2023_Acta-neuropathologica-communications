@@ -60,3 +60,24 @@ get_upper_tri <- function(cormat){
 }
 
 #################################################################
+
+
+path <- file.path(get_wd())
+rawPD<-list.files(paste0(path,"/rawdata"), pattern = "_Proteins.txt$")
+
+
+# Load data exported from the PD software
+datafromPD<-lapply(rawPD, function(file){
+  return(fread(paste0(path,"/",file)))
+})
+
+require(stringr)
+for(i in seq_len(length(datafromPD))){
+  colnames(datafromPD[[i]])<-str_replace_all(colnames(datafromPD[[i]]),"[ ]",".")
+  colnames(datafromPD[[i]])<-str_replace_all(colnames(datafromPD[[i]]),"[-]","_")
+}
+
+counts<-lapply(datafromPD, function(data){
+  cts<-data %>% base::subset(select = c("Accession",grep("^Abundances.", colnames(data), value=TRUE))) 
+  return(cts)
+})
