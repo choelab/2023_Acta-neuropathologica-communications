@@ -1,3 +1,10 @@
+###############################
+# title : Figure 6
+# author : Jaemyung, Jang (piloter2@kbri.re.kr)
+# kenel : R 4.3.0
+# Date : March 18, 2023
+###############################
+
 DelayedArray:::set_verbose_block_processing(TRUE)
 
 # Passing a higher value will make some computations faster but use more memory. Adjust with caution!
@@ -17,16 +24,16 @@ hipp_05m <- readRDS(paste0(path_base,"/rawdata/hippocampus_3-5-6m.RDS"))
 Idents(object = hipp_05m) <- sprintf("%02d",hipp_05m@meta.data$`SCT_snn_res.0.3`)
 hipp_05m@meta.data$cell_type_age[which(Idents(hipp_05m)=="01")] <- "OLG"
 hipp_05m@meta.data$cell_type_age[which(Idents(hipp_05m)=="02")] <- "ASC"
-hipp_05m@meta.data$cell_type_age[which(Idents(hipp_05m)=="03")] <- "MG"
-hipp_05m@meta.data$cell_type_age[which(Idents(hipp_05m)=="04")] <- "Neuron"
-hipp_05m@meta.data$cell_type_age[which(Idents(hipp_05m)=="05")] <- "Neuron"
+hipp_05m@meta.data$cell_type_age[which(Idents(hipp_05m)=="03")] <- "microglia"
+hipp_05m@meta.data$cell_type_age[which(Idents(hipp_05m)=="04")] <- "Neuron A"
+hipp_05m@meta.data$cell_type_age[which(Idents(hipp_05m)=="05")] <- "Neuron B"
 hipp_05m@meta.data$cell_type_age[which(Idents(hipp_05m)=="06")] <- "Endo"
 hipp_05m@meta.data$cell_type_age[which(Idents(hipp_05m)=="07")] <- "OPC"
 hipp_05m@meta.data$cell_type_age[which(Idents(hipp_05m)=="08")] <- "Fib"
 hipp_05m@meta.data$cell_type_age[which(Idents(hipp_05m)=="09")] <- "NEUT"
 hipp_05m@meta.data$cell_type_age[which(Idents(hipp_05m)=="10")] <- "OLG"
 hipp_05m@meta.data$cell_type_age[which(Idents(hipp_05m)=="11")] <- "EPC"
-hipp_05m@meta.data$cell_type_age[which(Idents(hipp_05m)=="12")] <- "VSMC"
+#hipp_05m@meta.data$cell_type_age[which(Idents(hipp_05m)=="12")] <- "VSMC" # Since the total number was less than 100, we excluded them from the analysis
 
 #Extended Data Suppmentary Figure 7a
 pS1a<-DimPlot(subset(hipp_05m, subset = genetype == "C57BL/6", ident =names(which(table(Idents(hipp_05m))>100))), group.by = "cell_type_age", label =T, label.size = 2.5, pt.size = 0.01,raster=FALSE,
@@ -45,6 +52,24 @@ pS1b<-DimPlot(subset(hipp_05m, subset = genetype == "5xFAD (C57BL/6)", ident = n
   ggtitle(paste0("Tg6799 hippocampus : ",comma(length(colnames(subset(hipp_05m, subset = genetype == "5xFAD (C57BL/6)", ident =names(which(table(Idents(hipp_05m))>200))))),format = "d")," cells")) +
   NoLegend() + NoAxes()
 
+Idents(hipp_05m) <- "cell_type_age"
+hipp_05m.markers <- FindAllMarkers(hipp_05m,
+                                    only.pos = TRUE, logfc.threshold = 0.25, 
+                                    assay = "RNA")
+
+hipp_05m.markers.top20 <- hipp_05m.markers %>% group_by(cluster) #%>%  filter (p_val_adj < 0.1) %>% top_n(n = 5, wt = avg_log2FC) 
+hipp_05m.markers.arrange <- rbind(hipp_05m.markers.top20 %>% dplyr::filter(cluster == "ASC"),
+      hipp_05m.markers.top20 %>% dplyr::filter(cluster == "Endo"),
+      hipp_05m.markers.top20 %>% dplyr::filter(cluster == "EPC"),
+      hipp_05m.markers.top20 %>% dplyr::filter(cluster == "Fib"),
+      hipp_05m.markers.top20 %>% dplyr::filter(cluster == "MG"),
+      hipp_05m.markers.top20 %>% dplyr::filter(cluster == "Neuron A"),
+      hipp_05m.markers.top20 %>% dplyr::filter(cluster == "Neuron B"),
+      hipp_05m.markers.top20 %>% dplyr::filter(cluster == "NEUT"),
+      hipp_05m.markers.top20 %>% dplyr::filter(cluster == "OLG"),
+      hipp_05m.markers.top20 %>% dplyr::filter(cluster == "OPC"))
+hipp_05m.markers.filter <- setdiff(hipp_05m.markers.arrange$gene, grep("^Rps|^Rpl|^mt.|^Hba\\.|^Hbb\\.|$Rik|^Gm",hipp_05m.markers.top20$gene, value = TRUE))
+
 #Extended Data Suppmentary Figure 7b
 pS2<-DoHeatmap(subset(hipp_05m,downsample = 1000), features = hipp_05m.markers.filter,
           group.by = "cell_type_age",
@@ -57,19 +82,6 @@ require(Nebulosa)
 pS3<-plot_density(hipp_05m, features = c("Meg3","Atp1b1"), reduction = "umap" ,
                pal = "inferno", 
                method = c("wkde"), size = 0.025, adjust=0.25)
-
-Idents(hipp_05m) <- "cell_type_age"
-hipp_05m.markers <- FindAllMarkers(hipp_05m,
-                                    only.pos = TRUE, logfc.threshold = 0.25, 
-                                    assay = "RNA")
-
-hipp_05m.markers.top20 <- hipp_05m.markers %>% group_by(cluster) #%>%  filter (p_val_adj < 0.1) %>% top_n(n = 5, wt = avg_log2FC) 
-
-hipp.merged_new.markers <- FindAllMarkers(hipp.merged_new,
-                                    only.pos = TRUE, logfc.threshold = 0.75, 
-                                    assay = "RNA")
-
-hipp.merged_new.markers.top20 <- hipp.merged_new.markers%>% group_by(cluster) %>%  filter (p_val_adj < 0.1) %>% top_n(n = 5, wt = avg_log2FC) 
 
 # subsetting neuron subtype
 neuron <- subset(hipp_05m, ident = c("04","05"))
@@ -96,7 +108,6 @@ neuron <- neuron %>%
      RunUMAP(reduction = "ica", umap.method = "umap-learn", dims=1:10) %>%
      FindNeighbors(reduction = "ica", dims=1:10) %>%
      FindClusters(resolution =seq(0.1,1,0.1), algorithm = 2)
-
 
 Idents(object = neuron) <- neuron@meta.data$'SCT_snn_res.0.2' 
 neuron@meta.data$cell_type_age[which(Idents(neuron)=='0')] <- "Neuron:sub-u"
@@ -144,18 +155,17 @@ p6b<-DotPlot(neuron,
 # Figure 6c
 require("scProportionTest")
 
-hipp_05m@meta.data$cell_type_age[which(WhichCells(hipp_05m) %in% WhichCells(neuron, idents = '0'))] <- "Neuron:sub-u"
-hipp_05m@meta.data$cell_type_age[which(WhichCells(hipp_05m) %in% WhichCells(neuron, idents = '1'))] <- "Neuron:sub-1"
-hipp_05m@meta.data$cell_type_age[which(WhichCells(hipp_05m) %in% WhichCells(neuron, idents = '2'))] <- "Neuron:sub-2"
-hipp_05m@meta.data$cell_type_age[which(WhichCells(hipp_05m) %in% WhichCells(neuron, idents = '3'))] <- "Neuron:sub-3"
-hipp_05m@meta.data$cell_type_age[which(WhichCells(hipp_05m) %in% WhichCells(neuron, idents = '4'))] <- "Neuron:sub-4"
-hipp_05m@meta.data$cell_type_age[which(WhichCells(hipp_05m) %in% WhichCells(neuron, idents = '5'))] <- "Neuron:sub-5"
-hipp_05m@meta.data$cell_type_age[which(WhichCells(hipp_05m) %in% WhichCells(neuron, idents = '6'))] <- "Neuron:sub-6"
-hipp_05m@meta.data$cell_type_age[which(WhichCells(hipp_05m) %in% WhichCells(neuron, idents = '7'))] <- "Neuron:sub-7"
-hipp_05m@meta.data$cell_type_age[which(WhichCells(hipp_05m) %in% WhichCells(neuron, idents = '8'))] <- "Neuron:sub-8"
+hipp_05m@meta.data$cell_type_age[which(WhichCells(hipp_05m) %in% WhichCells(neuron, idents = '0'))] <- "Neuron:Undef."
+hipp_05m@meta.data$cell_type_age[which(WhichCells(hipp_05m) %in% WhichCells(neuron, idents = '1'))] <- "Neuron:Gad1"
+hipp_05m@meta.data$cell_type_age[which(WhichCells(hipp_05m) %in% WhichCells(neuron, idents = '2'))] <- "Neuron:Olfm"
+hipp_05m@meta.data$cell_type_age[which(WhichCells(hipp_05m) %in% WhichCells(neuron, idents = '3'))] <- "Neuron:Hpca"
+hipp_05m@meta.data$cell_type_age[which(WhichCells(hipp_05m) %in% WhichCells(neuron, idents = '4'))] <- "Neuron:Chgb"
+hipp_05m@meta.data$cell_type_age[which(WhichCells(hipp_05m) %in% WhichCells(neuron, idents = '5'))] <- "Neuron:Gad2"
+hipp_05m@meta.data$cell_type_age[which(WhichCells(hipp_05m) %in% WhichCells(neuron, idents = '6'))] <- "Neuron:Calb2"
+hipp_05m@meta.data$cell_type_age[which(WhichCells(hipp_05m) %in% WhichCells(neuron, idents = '7'))] <- "Neuron:Sst"
+hipp_05m@meta.data$cell_type_age[which(WhichCells(hipp_05m) %in% WhichCells(neuron, idents = '8'))] <- "Neuron:Slc32a1"
 
-
-  prop_test <- sc_utils(hipp_more)
+  prop_test <- sc_utils(hipp_05m)
   prop_test <- permutation_test(
     hipp_05m, cluster_identity = "cell_type_age",
     sample_1 = names(table(hipp_05m$genetype))[2], sample_2 = names(table(hipp_05m$genetype))[1],
@@ -164,9 +174,9 @@ hipp_05m@meta.data$cell_type_age[which(WhichCells(hipp_05m) %in% WhichCells(neur
 
 p6c<-permutation_plot(prop_test,log2FD_threshold = 0.3,FDR_threshold = 0.1)
 
-ggsave(paste0(path_base,"/results/Figure1d_DimPlot_set_0.5.pdf"), p6a, units = "in", width =5, height =5, device = "pdf")
-ggsave(paste0(path_base,"/results/Figure1e_DotPlot.pdf"), p6b, units = "in", width =5, height =10, device = "pdf")
-ggsave(paste0(path_base,"/results/Figure1f_permutation.pdf"), p6c, units = "in", width =10, height =5, device = "pdf")
+ggsave(paste0(path_base,"/results/Figure6a_DimPlot.pdf"), p6a, units = "in", width =5, height =5, device = "pdf")
+ggsave(paste0(path_base,"/results/Figure6b_DotPlot.pdf"), p6b, units = "in", width =5, height =10, device = "pdf")
+ggsave(paste0(path_base,"/results/Figure6c_permutation.pdf"), p6c, units = "in", width =10, height =5, device = "pdf")
 
 neuron.DE <- lapply(levels(Idents(neuron)), function(ID){#lapply(names(which(table(Idents(hipp_05m))>50)), function(ID){
   obj<-subset(neuron, idents = ID)
@@ -243,23 +253,17 @@ for(id in c("4","6","7")) {
 
 neuron.DE.A <- merge(neuron.DE[["4"]] %>% dplyr::filter(p_val < 0.01),neuron.DE[["7"]] %>% dplyr::filter(p_val < 0.01), by=0,all = TRUE) 
 
-pathGeneClus <- list()
-
-for(id in c("4","6","7")) {
-      pathGeneClus[[id]] <- unique(unlist(str_split(neuron.GO.bp[[id]]@result$core_enrichment[neuron.GO.bp[[id]]@result$Description %in% commons],"/")))   
-}
-
-id = "7"
-pathGenes <- unique(unlist(str_split(neuron.GO.bp[[id]]@result$core_enrichment[neuron.GO.bp[[id]]@result$Description %in% commons],"/")))
+  common<-intersect(neuron.GO.bp[["4"]]@result$Description,neuron.GO.bp[["7"]]@result$Description)
+  commons<-setdiff(grep("synaptic|vesicl|phago|secret|exocy|cili|endo", common, value=TRUE),
+                  grep("insulin|hormone|glial|peptide|endothe|tubule", common, value=TRUE))
+                  
+  id = "7" # or "4"
+  pathGenes <- unique(unlist(str_split(neuron.GO.bp[[id]]@result$core_enrichment[neuron.GO.bp[[id]]@result$Description %in% commons],"/")))
 
     selAccession.n <- neuron.DE.A %>% 
             dplyr::filter(avg_log2FC.x < -0.25 & avg_log2FC.y < -0.25) %>% dplyr::pull(Row.names)
-
-
-
     selAccession.p <- neuron.DE.A %>% 
             dplyr::filter(avg_log2FC.x > 0.25 & avg_log2FC.y > 0.25) %>% dplyr::pull(Row.names)
-
 
     # options(repr.plot.width = 16, repr.plot.height = 16)
     keyvals.colour <- ifelse(neuron.DE.A$Row.names %in% selAccession.n, 'royalblue', 'lightgrey')
@@ -272,9 +276,6 @@ pathGenes <- unique(unlist(str_split(neuron.GO.bp[[id]]@result$core_enrichment[n
 
     neuron.DE.A$group <- names(keyvals.colour)
     
-    common<-intersect(neuron.GO.bp[["4"]]@result$Description,neuron.GO.bp[["7"]]@result$Description)
-    commons<-setdiff(grep("synaptic|vesicl|phago|secret|exocy|cili|endo", common, value=TRUE),
-                  grep("insulin|hormone|glial|peptide|endothe|tubule", common, value=TRUE))
 
 # Figure 6d
 require(ggrepel)
