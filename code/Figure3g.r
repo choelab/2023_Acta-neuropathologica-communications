@@ -135,3 +135,29 @@ pv<-EnhancedVolcano(data.merged,
 
 ggsave(paste0(path, "/results/Figure3g_vc.pdf"), pv, width = 7.5, height =7.5 , units = "in", device = "pdf")
 
+
+# Pathway analysis - Extended Data Figure 3
+
+require(enrichR)
+
+  listEnrichrSites()
+  websiteLive <- TRUE
+  dbs <- listEnrichrDbs()
+
+  dbs <- "SynGO_2022"
+  if (websiteLive) {
+      enriched <- enrichr(data.merged$Gene.names[data.merged$Accession %in% selAccession], dbs)
+      enriched.1 <- enrichr(data.merged$Gene.names[data.merged$Accession %in% selAccession.1], dbs)
+  }
+
+enriches.syngo<-enriched[[2]][grep("Vesicle|Presynap",enriched[[2]]$Term),]
+enriches.syngo1<-enriched.1[[2]][grep("Vesicle|Presynap",enriched.1[[2]]$Term),]
+
+pdf(paste0(path,"/results/FigureS3_SynGO-upregulated.pdf"), width=10, height=5)
+    plotEnrich(enriches.syngo, showTerms = 25, numChar = 85, y = "Count", orderBy = "P.value")
+dev.off()
+#print(enriched.1[[2]])
+#tiff(paste0(path,"/results/FigureS3_SynGO-downregulated.tiff"), units="in", width=10, height=5, res=600)
+pdf(paste0(path,"/results/Figure_SynGO-downregulated.pdf"), width=10, height=6)
+ plotEnrich(enriches.syngo1, showTerms = 25, numChar = 85, y = "Count", orderBy = "P.value")
+ dev.off()
