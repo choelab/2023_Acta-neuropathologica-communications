@@ -1,7 +1,7 @@
 ###############################
 # title : Figure 2 in Abnormal accumulation of extracellular vesicles in hippocampal dystrophic axons and regulation by the primary cilia gene intraflagellar transport homolog 88 in Alzheimer’s disease
 # author : Jaemyung, Jang (piloter2@kbri.re.kr)
-# kenel : R 4.3.0
+# kenel : R 4.2.0
 # Date : May 18, 2023
 ###############################
 
@@ -9,6 +9,7 @@ source(paste0(getwd(),"/code/proteomic_function.R"))
 
 k = 1 # select number - 190722_MS hipp Synaptosome_Proteins.txt ; from Dr. Lee
 
+# Figure 2 - Venn Diagram
 Syn.count<-list("WT"=subset(counts[[k]], select = c("Accession",grep("WT$", colnames(counts[[k]]), value=TRUE))),
                 "Tg6799"=subset(counts[[k]], select = c("Accession",grep("Tg6799$", colnames(counts[[k]]), value=TRUE))))
                 
@@ -26,7 +27,6 @@ ggsave(paste0(path, "/results/Figure2_venn.pdf"), p, width = 5, height =5 , unit
 
 
 # Matching gene symbols in the PD software and the unitProt
-
 cts <- lapply(datafromPD, function(dt){
   dts <- dt %>% subset( select = c("Accession", grep("^Abundance.Ratio\\.\\(log2\\)|^Abundance.Ratio.Adj..P_Value|^Abundance.Ratio.Weight", colnames(dt), value=TRUE)))
   return(dts)
@@ -83,9 +83,8 @@ require(ggrepel)
 
 pscatter <- ggplot(data.merged, aes(x=Abundance.Ratio.log2, y=Abundance.Ratio.Weight, color =group)) + 
   geom_point() +
-  geom_text_repel(data = data.merged[ which(data.merged$Gene.names %in% selgene),],
-                    #   data.merged [(abs(data.merged$Abundance.Ratio.log2) > 0.25) 
-                    #                   &  ( data.merged$Abundance.Ratio.Adj.P_Value < 0.1 )],
+  geom_text_repel(data = data.merged [(abs(data.merged$Abundance.Ratio.log2) > 0.25) 
+                                       &  ( data.merged$Abundance.Ratio.Adj.P_Value < 0.1 )],
                   aes(label=Gene.names), 
                   arrow = arrow(length = unit(0.000001, "npc")),
                   colour = "black",
@@ -104,7 +103,6 @@ pscatter <- ggplot(data.merged, aes(x=Abundance.Ratio.log2, y=Abundance.Ratio.We
 ggsave(paste0(path, "/results/Figure2_scatter.pdf"), pscatter, width = 5, height = 5 , units = "in", device = "pdf")
 
 # Figure 2 - Gene Set Enrichment Analysis
-
 require(enrichR)
 
   listEnrichrSites()
