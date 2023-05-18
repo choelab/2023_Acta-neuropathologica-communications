@@ -7,32 +7,6 @@
 
 source(paste0(getwd(),"/code/proteomic_function.R"))
 
-path <- file.path(get_wd())
-rawPD<-list.files(paste0(path,"/rawdata"), pattern = "_Proteins.txt$")
-
-
-# Load data exported from the PD software
-datafromPD<-lapply(rawPD, function(file){
-  return(fread(paste0(path,"/",file)))
-})
-
-require(stringr)
-for(i in seq_len(length(datafromPD))){
-  colnames(datafromPD[[i]])<-str_replace_all(colnames(datafromPD[[i]]),"[ ]",".")
-  colnames(datafromPD[[i]])<-str_replace_all(colnames(datafromPD[[i]]),"[-]","_")
-}
-
-counts<-lapply(datafromPD, function(data){
-  cts<-data %>% base::subset(select = c("Accession",grep("^Abundances.", colnames(data), value=TRUE))) 
-  return(cts)
-})
-
-cts <- lapply(datafromPD, function(dt){
-  dts <- dt %>% subset( select = c("Accession", grep("^Abundance.Ratio\\.log2|^Abundance.Ratio.Adj.P_Value|^Abundance.Ratio.Weight", colnames(dt), value=TRUE)))
-  return(dts)
-})
-
-
 k = 4 # select number - 230316_220315_N_Lysate_siIft_Proteins.txt ; from Dr. Yeo
 
 # Figure 5 - Venn Diagram
@@ -51,6 +25,11 @@ p <- ggvenn(new.types,
 ggsave(paste0(path, "/results/Figure5_venn.pdf"), p, width = 5, height =5 , units = "in", device = "pdf")
 
 # Matching gene symbols in the PD software and the unitProt
+
+cts <- lapply(datafromPD, function(dt){
+  dts <- dt %>% subset( select = c("Accession", grep("^Abundance.Ratio\\.log2|^Abundance.Ratio.Adj.P_Value|^Abundance.Ratio.Weight", colnames(dt), value=TRUE)))
+  return(dts)
+})
 
 resultUNIPROT <- pbapply::pblapply(datafromPD[[k]]$Accession,function(ids){ #[-grep("ProteinCenter:sp_incl_isoforms",datafromPD$Accession)]
     data <- uniprot_mapping(ids)
