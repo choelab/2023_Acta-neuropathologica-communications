@@ -1,5 +1,5 @@
 ###############################
-# title : Figure 3g
+# title : Figure 3g in Abnormal accumulation of extracellular vesicles in hippocampal dystrophic axons and regulation by the primary cilia gene intraflagellar transport homolog 88 in Alzheimer’s disease
 # author : Jaemyung, Jang (piloter2@kbri.re.kr)
 # kenel : R 4.3.0
 # Date : March 18, 2023
@@ -7,29 +7,14 @@
 
 source(paste0(getwd(),"/code/proteomic_function.R"))
 
-path <- file.path(get_wd())
-rawPD<-list.files(paste0(path,"/rawdata_from_PD"), pattern = "_Proteins.txt$")
+k = 4 # select number - 230316_220315_N_Lysate_siIft_Proteins.txt ; from Dr. Yeo
 
-
-# Load data
-datafromPD<-lapply(rawPD, function(file){
-  return(fread(paste0(path,"/",file)))
-})
-
-require(stringr)
-for(i in seq_len(length(datafromPD))){
-  colnames(datafromPD[[i]])<-str_replace_all(colnames(datafromPD[[i]]),"[ ]",".")
-  colnames(datafromPD[[i]])<-str_replace_all(colnames(datafromPD[[i]]),"[-]","_")
-}
-
-# Venn diagram
+# Figure 3g - Venn diagram
 counts<-lapply(datafromPD, function(data){
   cts<-data %>% base::subset(select = c("Accession",grep("^Abundances.", colnames(data), value=TRUE))) 
   return(cts)
 })
 
-k = 2 # select number number from "print(rawPD)"
-  
 Syn.count<-list("C57BL/6"=subset(counts[[k]], select = c("Accession",grep(".Control.WT$", colnames(counts[[k]]), value=TRUE))),
                 "5xFAD"=subset(counts[[k]], select = c("Accession",grep(".Sample.Tg6799$", colnames(counts[[k]]), value=TRUE))))
                 
@@ -46,15 +31,14 @@ p <- ggvenn(Syn.types,
 print(p)
 ggsave(paste0(path, "/results/Figure3g_venn.pdf"), p, width = 5, height =5 , units = "in", device = "pdf")
 
-# Gene symbol
+# Matching gene symbols in the PD software and the unitProt
 
 cts <- lapply(datafromPD, function(dt){
   dts <- dt %>% subset( select = c("Accession", grep("^Abundance.Ratio.log2.|^Abundance.Ratio.Adj.P_Value.|^Abundance.Ratio.Weight.", colnames(dt), value=TRUE)))
   return(dts)
 })
 
-  
-  resultUNIPROT <- pbapply::pblapply(datafromPD[[k]]$Accession,function(ids){ #[-grep("ProteinCenter:sp_incl_isoforms",datafromPD$Accession)]
+resultUNIPROT <- pbapply::pblapply(datafromPD[[k]]$Accession,function(ids){ #[-grep("ProteinCenter:sp_incl_isoforms",datafromPD$Accession)]
     data <- uniprot_mapping(ids)
     content(data, as= "text", encoding = 'UTF-8')
     res<-unlist(str_split(unlist(str_split(unlist(str_split(content(data, as= "text", encoding = 'UTF-8'),"\\t")),"\\n"))[4]," "))[1]
@@ -88,7 +72,7 @@ colnames(data_unique)
 data.merged <- subset(data_unique, select = c('Gene.names','Accession','Abundance.Ratio.log2.Sample..Control','Abundance.Ratio.Adj.P_Value.Sample..Control','Abundance.Ratio.Weight.Sample..Control'))
 colnames(data.merged) <- c("Gene.names","Accession", "Abundance.Ratio.log2","Abundance.Ratio.Adj.P_Value","Abundance.Ratio.Weight")
 
-# Volcano plot
+# Figure 3g - Volcano plot
 selAccession <- data.merged %>% 
            dplyr::filter(Abundance.Ratio.log2 < -0.25 & Abundance.Ratio.Adj.P_Value < 10e-1) %>% dplyr::pull(Accession)
 
@@ -118,8 +102,6 @@ pv<-EnhancedVolcano(data.merged,
     subtitle = "Differential expression between 5xFAD and C56BL/6",
     xlab = bquote(~Log[2]~ 'fold change'),
     ylab = bquote(~Log[10]~ 'adjust P-value'),
-    #selectLab = c(data.merged$Gene.names[(abs(data.merged$Abundance.Ratio.log2) > 0.25) 
-    #                                  &  ( data.merged$Abundance.Ratio.Adj.P_Value < 0.5 )],"Cd81","Mif","App"),
     pCutoff = 0.1,
     FCcutoff = 0.25,
     pointSize = 0.1,
@@ -136,7 +118,7 @@ pv<-EnhancedVolcano(data.merged,
 ggsave(paste0(path, "/results/Figure3g_vc.pdf"), pv, width = 7.5, height =7.5 , units = "in", device = "pdf")
 
 
-# Pathway analysis - Extended Data Figure 3
+# Extended Data Supplementary Figure 3 - Gene Set Enrichment Analysis
 
 require(enrichR)
 
@@ -156,8 +138,7 @@ enriches.syngo1<-enriched.1[[2]][grep("Vesicle|Presynap",enriched.1[[2]]$Term),]
 pdf(paste0(path,"/results/FigureS3_SynGO-upregulated.pdf"), width=10, height=5)
     plotEnrich(enriches.syngo, showTerms = 25, numChar = 85, y = "Count", orderBy = "P.value")
 dev.off()
-#print(enriched.1[[2]])
-#tiff(paste0(path,"/results/FigureS3_SynGO-downregulated.tiff"), units="in", width=10, height=5, res=600)
-pdf(paste0(path,"/results/Figure_SynGO-downregulated.pdf"), width=10, height=6)
+
+pdf(paste0(path,"/results/FigureS3_SynGO-downregulated.pdf"), width=10, height=6)
  plotEnrich(enriches.syngo1, showTerms = 25, numChar = 85, y = "Count", orderBy = "P.value")
  dev.off()
