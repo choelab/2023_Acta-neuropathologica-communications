@@ -7,14 +7,13 @@
 
 source(paste0(getwd(),"/code/proteomic_function.R"))
 
-k = 3 #  select number - 200114_CD63 IP_Proteins.txt ; from Dr. Yeo
+k = 3 #  select number - 200114_CD63 IP_Proteins.txt ; from Dr. 
 
-# Venn diagram
+# Figure 4 - Venn Diagram
 counts<-lapply(datafromPD, function(data){
   cts<-data %>% base::subset(select = c("Accession",grep("^Abundances.", colnames(data), value=TRUE))) 
   return(cts)
 })
-
   
 Syn.count<-list("WT"=subset(counts[[k]], select = c("Accession",grep("WT$", colnames(counts[[k]]), value=TRUE))),
                 "Tg6799"=subset(counts[[k]], select = c("Accession",grep("Tg6799$", colnames(counts[[k]]), value=TRUE))))
@@ -31,12 +30,11 @@ p <- ggvenn(Syn.types,
 
 ggsave(paste0(path, "/results/Figure4_venn.pdf"), p, width = 5, height =5 , units = "in", device = "pdf")
 
+# Matching gene symbols in the PD software and the unitProt
 cts <- lapply(datafromPD, function(dt){
   dts <- dt %>% subset( select = c("Accession", grep("^Abundance.Ratio\\.\\(log2\\)|^Abundance.Ratio.Adj..P_Value|^Abundance.Ratio.Weight", colnames(dt), value=TRUE)))
   return(dts)
 })
-
-# Gene symbol
 
 resultUNIPROT <- pbapply::pblapply(datafromPD[[k]]$Accession,function(ids){ #[-grep("ProteinCenter:sp_incl_isoforms",datafromPD$Accession)]
     data <- uniprot_mapping(ids)
@@ -48,12 +46,9 @@ resultUNIPROT <- pbapply::pblapply(datafromPD[[k]]$Accession,function(ids){ #[-g
   results_from_uniprot <- data.frame('Accession' = datafromPD[[k]]$Accession,  #[-grep("ProteinCenter:sp_incl_isoforms",datafromPD$Accession)]
                                      'Gene.names' = unlist(resultUNIPROT))
   require(stringi)
-  # str_sub(datafromPD[[k]]$Description[1], #[-grep("ProteinCenter:sp_incl_isoforms",datafromPD$Accession)]
-  #         str_locate(datafromPD[[k]]$Description[1],pattern = "GN=")[2]+1, #[-grep("ProteinCenter:sp_incl_isoforms",datafromPD$Accession)]
-  #         str_locate(datafromPD[[k]]$Description[1],pattern = "PE=")[1]-2) #[-grep("ProteinCenter:sp_incl_isoforms",datafromPD$Accession)]
-  # seq_len(length(dataPD$Description))
+
+
   result<-lapply(datafromPD[[k]]$Description, function(desc){ #[-grep("ProteinCenter:sp_incl_isoforms",datafromPD$Accession)]
-    # str_sub(grep("GN=",unlist(str_split(desc, " ")), value = TRUE),start = 4L)
     str_sub(desc, 
             str_locate(desc,pattern = "GN=")[2]+1,
             str_locate(desc,pattern = "PE=")[1]-2)
@@ -73,13 +68,10 @@ data.merged <- subset(data_unique, select = c('Gene.names','Accession','Abundanc
 
 colnames(data.merged) <- c("Gene.names","Accession", "Abundance.Ratio.log2","Abundance.Ratio.Adj.P_Value","Abundance.Ratio.Weight")
 
-# Scatter Plot
+# Figure 4 - Gene Set Enrichment Analysis
 
 selAccession <- data.merged %>% 
            dplyr::filter(Abundance.Ratio.log2 < -0.25 & Abundance.Ratio.Adj.P_Value < .1) %>% dplyr::pull(Accession)
-
-
-
 selAccession.1 <- data.merged %>% 
            dplyr::filter(Abundance.Ratio.log2 > 0.25 & Abundance.Ratio.Adj.P_Value < .1) %>% dplyr::pull(Accession)
 
@@ -94,31 +86,6 @@ names(keyvals.colour)[keyvals.colour == 'royalblue'] <- 'down-regulated'
 names(keyvals.colour)[keyvals.colour == 'darkred'] <- 'up-regulated'
 
 data.merged$group <- names(keyvals.colour)
-# 
-
-p2<-ggplot(data.merged, aes(x=Abundance.Ratio.log2, y=Abundance.Ratio.Weight, color =group)) + 
-  geom_point() +
-  geom_text_repel(data = data.merged[data.merged$Gene.names %in% selgene,],#data.merged[(abs(data.merged$Abundance.Ratio.log2) > 0.25) 
-                         #             &  ( data.merged$Abundance.Ratio.Adj.P_Value < 0.1 ) ,],
-                  aes(label=Gene.names), 
-                  arrow = arrow(length = unit(0.0001, "npc")),
-                  colour = "black",max.overlaps = 50, min.segment.length=0.1)+
-  #xlab("Log2 Fold change between single-cell and bulk-cell analysis")+
-  #ylab("Log2 Fold change between 100-cell and bulk-cell analysis")+
-  scale_colour_manual(values = c("royalblue","lightgrey","darkred"))+ #brewer.pal(3,"Paired")
-  
-  theme_bw()+
-  theme(legend.position=c(0.9, 0.2),
-        axis.text.x = element_text(size = 12, hjust = 0, colour = "black"),
-        axis.text.y = element_text(size = 12),
-        axis.title = element_text(size = 16),
-        legend.title = element_blank(),
-        legend.background = element_blank()) + 
-   theme(legend.position = "none")
-
-   ggsave(paste0(path, "/results/Figure4_scatter.pdf"), p2, width = 5, height =5 , units = "in", device = "pdf")
-
-# Pathway analysis
 
 require(enrichR)
 
@@ -135,13 +102,14 @@ require(enrichR)
   enriches<-enriched[[1]][grep("vesicular|exocy|endosome|vesicle|mediated transport|dendritic transport|dense",enriched[[1]]$Term),] %>% dplyr::filter(P.value < 0.1)
   enriches.1<-enriched.1[[1]][grep("vesicular|exocy|endosome|vesicle|mediated transport|dendritic transport|dense",enriched.1[[1]]$Term),] %>% dplyr::filter(P.value < 0.1)
 
-
   enrichDF<-rbind(cbind(enriches, group = "negative"),cbind(enriches.1, group = "positive"))
   enrichDF$NumGenes<-as.numeric(str_split(enrichDF$Overlap, pattern = "/", simplify = TRUE)[,1])
   enrichDF <- enrichDF %>% dplyr::filter(NumGenes > 1)
   enrichDF <- enrichDF[-grep("neuromuscular ", enrichDF$Term),]
 
 selgene<-nichenetr::convert_human_to_mouse_symbols(unique(unlist(str_split(enrichDF$Genes,";")))) %>% na.omit()
+
+# Figure 4 - Scatter Plot
 
 p<-cowplot::plot_grid(
     ggplot(enrichDF %>% dplyr::filter(group == "negative"), aes(x=Term, y=NumGenes, fill = Adjusted.P.value)) + 
@@ -180,6 +148,25 @@ p<-cowplot::plot_grid(
         rel_heights = c(dim(enrichDF %>% dplyr::filter(group == "negative"))[1],dim(enrichDF %>% dplyr::filter(group == "positive"))[1]),
         ncol=1)
 
-print(p)
-
 ggsave(paste0(path, "/results/Figure4_pathway_summary.pdf"), p, width = 10, height = 10 , units = "in", device = "pdf")
+
+
+pScatter<-ggplot(data.merged, aes(x=Abundance.Ratio.log2, y=Abundance.Ratio.Weight, color =group)) + 
+  geom_point() +
+  geom_text_repel(data = data.merged[data.merged$Gene.names %in% selgene,],#data.merged[(abs(data.merged$Abundance.Ratio.log2) > 0.25) 
+                         #             &  ( data.merged$Abundance.Ratio.Adj.P_Value < 0.1 ) ,],
+                  aes(label=Gene.names), 
+                  arrow = arrow(length = unit(0.0001, "npc")),
+                  colour = "black",max.overlaps = 50, min.segment.length=0.1)+
+  scale_colour_manual(values = c("royalblue","lightgrey","darkred"))+ #brewer.pal(3,"Paired")
+  
+  theme_bw()+
+  theme(legend.position=c(0.9, 0.2),
+        axis.text.x = element_text(size = 12, hjust = 0, colour = "black"),
+        axis.text.y = element_text(size = 12),
+        axis.title = element_text(size = 16),
+        legend.title = element_blank(),
+        legend.background = element_blank()) + 
+   theme(legend.position = "none")
+
+   ggsave(paste0(path, "/results/Figure4_scatter.pdf"), pScatter, width = 5, height =5 , units = "in", device = "pdf")
